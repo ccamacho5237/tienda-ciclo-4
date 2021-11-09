@@ -1,0 +1,64 @@
+@charset "ISO-8859-1";
+
+.avatar1{
+	width: 130px;
+	height: 130px;
+	border-radius: 50%;
+	position: absolute;
+	margin-top: 10px;
+	left: calc(13% - 15px);
+}
+body{
+	background:white;
+	font-family:cursive;
+	margin:0; 
+}
+.container{
+	width:85%;
+	max-width:auto;
+	margin:0 auto;
+}
+.menu{
+	background: #24303c;
+	color:wite;
+	padding:0;
+}
+
+.saludo{
+	margin-top: 150px;
+	line-height: 30px;
+	margin-left: 50px;
+	letter-spacing:15;
+	font-size:1.3em;
+}
+.menu a {
+	color: white;
+	text-decoration:none;
+	}
+.logo-nav-container{
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+	aling-items: center;
+}
+.nav-enlace{
+	display: inline-block;
+	background: #b80f22;
+	color: #fff;
+	padding: 10px 30px;
+	border-radius: 20px;
+	text-decoration:none;
+	
+}
+
+.nav-enlace:hover {
+	background: #ffc107;
+	color: #000;
+}
+nav{
+	background: #24303c;
+	padding: 20px;	
+}
+.badge_titulo{
+	
+}
