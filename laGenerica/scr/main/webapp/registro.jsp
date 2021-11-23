@@ -11,6 +11,60 @@
 
 
 <title>Formulario Registro Usuarios</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+		$(document).ready(function(){
+
+			function ruta(servicio){
+				var getUrl = window.location;
+				var baseUrl = getUrl.protocol + "//" + getUrl.hostname + ":5001/";
+				
+				return baseUrl+servicio;
+			}
+			$("#btnLimpiar").click(function(){
+				$("#nombre_usuario").val("");
+				$("#cedula_usuario").val("");
+				$("#celular_usuario").val("");	
+				$("#sucursal").val("");	
+				$("#usuario").val("");	
+				$("#contraseña").val("");	
+			});
+			
+			$("#btnAgregar").click(function(){
+				let url = ruta("agregarUsuario");
+				let codigol = $("#nombre_usuario").val();
+				let titulol = $("#cedula_usuario").val();
+				let autorl = $("#celular_usuario").val();
+				let autorl = $("#sucursal").val();
+				let autorl = $("#usuario").val();
+				let autorl = $("#contraseña").val();
+				
+				let usuario = {
+						nombre_usuario: nombre_usuariol,
+						cedula_usuario: cedula_usuariol,
+						celular_usuario: celular_usuariol
+						sucursa: sucursal
+						usuario: usuariol
+						contraseña: contraseñal
+				}
+				
+				$.ajax({
+					type: "POST",
+					data: JSON.stringify(usuario),
+					url: url,
+					contentType: "application/json",
+					success: function(){
+						$("#respuesta").html("Se agrego usuario");;
+					},
+					error: function(){
+						$("#respuesta").html("NO se pudo agregar el usuario !!");;
+					}
+				});
+			});
+			
+						
+		});
+	</script>
 </head>
 
 <body>
@@ -36,7 +90,7 @@
 		<input
 			class="controls" type="text" name="nombre_usuario"
 			id="nombre_usuario" placeholder="Ingresar Nombre">
-		<input class="controls" type="text" name="cedula_usario"
+		<input class="controls" type="number" name="cedula_usario"
 			id="cedula_usuario" placeholder="Ingresar # Cedula">
 		 <input
 			class="controls" type="email" name="email_usuario" id="email_usuario"
@@ -58,8 +112,8 @@
 		<table>
 			<tr>
 				<td>
-					<button class="botons" type="submit" name="AgregarUsuario">AGREGAR</button>
-					<button class="botons" type="submit" name="ListaUsuarios">LIMPIAR</button>
+					<button class="botons" type="submit" id="btnAgregar"name="AgregarUsuario">AGREGAR</button>
+					<button class="botons" type="submit" id="btnLimpiar"name="LimpiarUsuario">LIMPIAR</button>
 					
 				</td>
 			</tr>

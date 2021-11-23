@@ -6,7 +6,31 @@
 <title>Acceso al Sistema</title>
 <link rel="stylesheet" href="css/acceso.css">
 <link rel="stylesheet" href="css/style.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+		$(document).ready(function(){
 
+			function ruta(servicio){
+				var getUrl = window.location;
+				var baseUrl = getUrl.protocol + "//" + getUrl.hostname + ":5001/";
+				
+				return baseUrl+servicio;
+			}
+			$("#ingresar").click(function(){
+				let txtUsuario =$("#usuario").val();
+				let txtPassword  =$("#password").val();
+				
+				let url = ruta ("validarUsuario");
+				alert(url);
+				$.post(url,{nombre_usuario:txtUsuario,contraseña:txtPassword},function(data,status){
+					$(location).attr("href",data);
+				})
+			});
+			
+						
+		});
+	</script>
 </head>
 <body>
 	<header>
@@ -14,22 +38,18 @@
 		<nav class="navigation">
 			<div>
 				<img src="img/Logo1.png" class="avatar1" alt="Avatar1 Image">
-				
+
 			</div>
 			<div>
 				<a class="titulo"> CADENA DE TIENDAS LA GENERICA-SUCURSAL </a><br>
-				
+
 			</div>
 			<div>
 				<ul>
-				<select class="nav-enlace" id="sucursal" size="0">
-					<option value="sucursal">--//--</option>
-					<option value="cali">CALI</option>
-					<option value="medellin">MEDELLIN</option>
-					<option value="bogota">BOGOTA</option>
-				</select>
-					<li><a href="registo.jsp" type="submit" class="nav-enlace">REGISTRO</a>
-					<li><a href="" type="submit" class="nav-enlace">SALIR</a></li>
+
+					<li><a href="registro.jsp" type="submit" class="nav-enlace">REGISTRO</a>
+					<li><a href="https://google.com" type="submit"
+						class="nav-enlace">SALIR</a></li>
 				</ul>
 			</div>
 		</nav>
@@ -42,7 +62,12 @@
 			<h1>Iniciar Sesión</h1>
 
 			<form>
-				<label for="txtUsuario">Usuario</label> <input type="text"
+				<select class="nav-enlace" id="sucursal" size="0" required>
+					<option value="">Seleccione la ciudad</option>
+					<option value="cali">CALI</option>
+					<option value="medellin">MEDELLIN</option>
+					<option value="bogota">BOGOTA</option>
+				</select> <label for="txtUsuario">Usuario</label> <input type="text"
 					name="txtUsuario" id="usuario" placeholder="Ingrese Usuario">
 				<!-- PASSWORD INPUT -->
 				<label for="txtPassword">Contraseña</label> <input type="password"
