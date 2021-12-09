@@ -1,1 +1,4 @@
-
+Login - Registro alterno: https://codepen.io/ccamacho5237/pen/yLzyVYp
+Cargue productos: https://codepen.io/ccamacho5237/pen/ZEXbVYd
+CRUD clientes: https://codepen.io/ccamacho5237/pen/MWEaZjN
+CRUD proveedores: https://codepen.io/ccamacho5237/pen/MWEaZjN
