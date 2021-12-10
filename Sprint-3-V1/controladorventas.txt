@@ -1,0 +1,285 @@
+package mintic.proyecto.proyecto.controlador;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+public class ControladorVentas extends HttpServlet {
+
+    ArrayList<String> nombresProductosVenta = new ArrayList<String>();
+    ArrayList<Double> precioPorProducto = new ArrayList<Double>();
+    ArrayList<Double> cantidadPorProducto = new ArrayList<Double>();
+
+    ArrayList<Long> codigosProductosVenta = new ArrayList<Long>();
+
+    ArrayList<Double> totalPorProducto = new ArrayList<Double>();
+    ArrayList<Double> totalIvaPorProducto = new ArrayList<Double>();
+    ArrayList<Double> totalPorProductoSinIva = new ArrayList<Double>();
+
+    long cedula_clienteC = 0;
+    long codigoVentaP = 0;
+    long codigo_venta = 0;
+
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String menu = request.getParameter("menu");
+        String accion = request.getParameter("accion");
+        String mensaje = null;
+        String mensajeAlerta = null;
+        if (menu.equals("Ventas")) {
+            switch (accion) {
+
+                case "Listar":
+                    request.setAttribute("saludo", "Bienvenido");
+                    request.setAttribute("usuarios", usuarioDao.getUsuarios());
+                    break;
+
+                case "ConsultarCliente":
+                try {
+                    codigo_venta += 1;
+                    cedula_clienteC = Long.valueOf(request.getParameter("campoCedula"));
+                    cliente = clienteDao.buscarCedula(cedula_clienteC);
+                    if (cliente.getCedula_cliente() == 0 || cliente.getDireccion_cliente().isEmpty() || cliente.getEmail_cliente().isEmpty() || cliente.getNombre_cliente().isEmpty() || cliente.getTelefono_cliente().isEmpty()) {
+                        mensajeAlerta = "La cédula no se encuentra registrada en la base de datos";
+                    } else {
+                        request.setAttribute("editarCliente", cliente);
+                        //request.setAttribute("consecutivo", codigo_venta);
+                    }
+                } catch (Exception e) {
+                    mensajeAlerta = "La cédula no se encuentra registrada en la base de datos";
+                }
+                request.setAttribute("mensajeAlerta", mensajeAlerta);
+
+                break;
+
+                case "ConsultarProducto":
+                    
+                try {
+                    double totalVenta = 0;
+                    double totalIva = 0;
+                    double totalConIva = 0;
+
+                    long codigo_producto = Long.valueOf(request.getParameter("codigo_producto"));
+                    // Producto product = new Producto();
+                    List<Producto> productoC = new ArrayList<Producto>();
+                    producto = productoDao.buscarProducto(codigo_producto);
+                    productoC.add(producto);
+                    if (producto.getCodigo_producto() == 0 || producto.getNombre_producto().isEmpty() || producto.getNitproveedor() == 0 || producto.getPrecio_compra() == 0 || producto.getIvacompra() == 0 || producto.getPrecio_venta() == 0) {
+                        mensajeAlerta = "El código de producto no se encuentra registrado en la base de datos";
+                    } else {
+                        request.setAttribute("productoEncontrado", producto);
+                        request.setAttribute("nombresProductosVenta", nombresProductosVenta);
+                        request.setAttribute("precioPorProducto", precioPorProducto);
+                        request.setAttribute("cantidadPorProducto", cantidadPorProducto);
+                        request.setAttribute("totalPorProducto", totalPorProducto);
+
+                        request.setAttribute("codigosProductosVenta", codigosProductosVenta);
+
+                        request.setAttribute("totalVenta", totalVenta);
+                        request.setAttribute("totalIva", totalIva);
+                        request.setAttribute("totalConIva", totalConIva);
+
+                    }
+                } catch (Exception e) {
+                    mensajeAlerta = "El código de producto no se encuentra registrado en la base de datos";
+                }
+                request.setAttribute("mensajeAlerta", mensajeAlerta);
+                request.setAttribute("editarCliente", cliente);
+                // request.setAttribute("consecutivo", codigo_venta);
+                break;
+
+                case "Confirmar":
+                    double totalVenta = 0;
+                    double totalIva = 0;
+                    double totalConIva = 0;
+                    try {
+                        String lecturaCantidad = request.getParameter("cantidad");
+                        double cantidad = Double.parseDouble(lecturaCantidad);
+
+                        if (cantidad >= 1) {
+                            long codigo_productoC = Long.valueOf(request.getParameter("codigo_producto"));
+                            Producto productC = new Producto();
+                            codigoVentaP += 1;
+
+                            productC = productoDao.buscarProducto(codigo_productoC);
+
+                            String nombreProducto = productC.getNombre_producto();
+
+                            double valorUnidad = productC.getPrecio_venta();
+                            double valorUnidadSinIva = productC.getPrecio_compra();
+
+                            double ventaPorProducto = cantidad * valorUnidad;
+                            double ventaPorProductoSinIva = cantidad * valorUnidadSinIva;
+                            double ivaPorProducto = ventaPorProducto - ventaPorProductoSinIva;
+
+                            detalleVenta.setCodigo_detalle_venta(codigoVentaP);
+                            detalleVenta.setCantidad_producto(Integer.valueOf(lecturaCantidad));
+                            detalleVenta.setCodigo_producto(codigo_productoC);
+                            detalleVenta.setCodigo_venta(codigo_venta);
+                            detalleVenta.setValor_total(ventaPorProducto);
+                            detalleVenta.setValor_venta(ventaPorProductoSinIva);
+                            detalleVenta.setValorIva(ivaPorProducto);
+                            detalleVentaDao.crearVentaPorProducto(detalleVenta);
+
+                            codigosProductosVenta.add(codigo_productoC);
+                            precioPorProducto.add(valorUnidad);
+                            cantidadPorProducto.add(cantidad);
+                            nombresProductosVenta.add(nombreProducto);
+
+                            totalPorProducto.add(ventaPorProducto);
+                            totalIvaPorProducto.add(ivaPorProducto);
+                            totalPorProductoSinIva.add(ventaPorProductoSinIva);
+
+                            for (int i = 0; i < totalPorProductoSinIva.size(); i++) {
+                                double valorA = 0;
+                                try {
+                                    valorA = totalPorProductoSinIva.get(i);
+                                } catch (NumberFormatException e) {
+                                    valorA = 0;
+                                }
+                                totalVenta += valorA;
+                            }
+
+                            for (int i = 0; i < totalIvaPorProducto.size(); i++) {
+                                double valorB = 0;
+                                try {
+                                    valorB = totalIvaPorProducto.get(i);
+                                } catch (NumberFormatException e) {
+                                    valorB = 0;
+                                }
+                                totalIva += valorB;
+                            }
+
+                            for (int i = 0; i < totalPorProducto.size(); i++) {
+                                double valorC = 0;
+                                try {
+                                    valorC = totalPorProducto.get(i);
+                                } catch (NumberFormatException e) {
+                                    valorC = 0;
+                                }
+                                totalConIva += valorC;
+                            }
+                            request.setAttribute("ventaPorProducto", ventaPorProducto);
+                        } else {
+                            mensajeAlerta = ("El valor de cantidad es incorrecto");
+                            request.setAttribute("productoEncontrado", producto);
+                        }
+
+                        request.setAttribute("editarCliente", cliente);
+                        request.setAttribute("consecutivo", codigo_venta);
+                        request.setAttribute("mensajeAlerta", mensajeAlerta);
+                    } catch (Exception e) {
+                        request.setAttribute("editarCliente", cliente);
+                        request.setAttribute("consecutivo", codigo_venta);
+                        mensajeAlerta = ("El valor de cantidad es incorrecto");
+
+                    }
+                    request.setAttribute("codigosProductosVenta", codigosProductosVenta);
+                    request.setAttribute("nombresProductosVenta", nombresProductosVenta);
+                    request.setAttribute("precioPorProducto", precioPorProducto);
+                    request.setAttribute("editarCliente", cliente);
+                    request.setAttribute("consecutivo", codigo_venta);
+                    request.setAttribute("cantidadPorProducto", cantidadPorProducto);
+                    request.setAttribute("totalPorProducto", totalPorProducto);
+                    request.setAttribute("totalVenta", totalVenta);
+                    request.setAttribute("totalIva", totalIva);
+                    request.setAttribute("totalConIva", totalConIva);
+                    request.setAttribute("mensajeAlerta", mensajeAlerta);
+                    request.setAttribute("consecutivo", codigo_venta);
+                    break;
+
+                case "GenerarFactura":
+                    totalVenta = Double.valueOf(request.getParameter("totalVenta"));
+                    totalIva = Double.valueOf(request.getParameter("totalIva"));
+                    totalConIva = Double.valueOf(request.getParameter("totalConIva"));
+
+                    Usuario usuarioDeVenta = new Usuario();
+                    HttpSession validacionUsuario = request.getSession();
+                    usuarioDeVenta = (Usuario) validacionUsuario.getAttribute("objusuario");
+                    String nombreDeUsuario = usuarioDeVenta.getNombreUsuario();
+                    Usuario usuarioActivo = new Usuario();
+                    usuarioActivo = usuarioDao.buscarUsuario(nombreDeUsuario);
+
+                    System.out.println("--------------");
+                    System.out.println(usuarioActivo.getNombreCompleto());
+                    System.out.println(usuarioActivo.getCedula());
+                    System.out.println("--------------");
+
+                    long cedula_cliente = cedula_clienteC;
+                    long cedula_usuario = usuarioActivo.getCedula();
+                    double ivaventa = totalIva;
+                    double total_venta = totalVenta;
+                    double valor_venta = totalConIva;
+
+                    venta.setCodigo_venta(codigo_venta);
+                    venta.setCedula_cliente(cedula_cliente);
+                    venta.setCedula_usuario(cedula_usuario);
+                    venta.setIvaventa(ivaventa);
+                    venta.setTotal_venta(total_venta);
+                    venta.setValor_venta(valor_venta);
+                    ventaDao.crearVenta(venta);
+
+                    codigosProductosVenta.clear();
+                    nombresProductosVenta.clear();
+                    cantidadPorProducto.clear();
+                    precioPorProducto.clear();
+                    totalPorProducto.clear();
+                    totalIvaPorProducto.clear();
+                    totalPorProductoSinIva.clear();
+
+                    request.getRequestDispatcher("ControladorVentas?menu=Ventas&accion=Listar").forward(request, response);
+
+                    break;
+
+                default:
+                    throw new AssertionError();
+            }
+            request.getRequestDispatcher("jsp/ventas.jsp").forward(request, response);
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}
